@@ -4,11 +4,12 @@
   "description": "Small website that allows users to visually interact with the SIF platform's API.",
   "private": true,
   "dependencies": {
+    "ejs": "^3.1.6",
+    "mdb-react-ui-kit": "^1.0.0-beta5",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-scripts": "4.0.1",
-    "web-vitals": "^0.2.4",
-    "mdb-react-ui-kit": "^1.0.0-beta5"
+    "web-vitals": "^0.2.4"
   },
   "scripts": {
     "start": "react-scripts start",
