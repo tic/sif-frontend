@@ -8,10 +8,14 @@ import {
     MDBTableHead,
     MDBTableBody
 } from 'mdb-react-ui-kit';
+import { TextField } from '@material-ui/core';
+import { DateTime } from 'luxon';
+import { saveAs } from 'file-saver';
+
 
 const axios = require("axios").default;
 var api = null;
-
+var dlApi = null;
 
 function RevealingButton(props) {
 
@@ -130,7 +134,93 @@ function RevealingButton(props) {
 }
 
 
+function DownloadButton(props) {
+
+    const [downloadPending, setDownloadPending] = useState(false);
+
+
+    function handleDownload(appName) {
+
+        setDownloadPending(true);
+
+        const startTime = DateTime.fromFormat(props.rangeStart, "yyyy-MM-dd'T'TT").toSeconds();
+        const endTime = DateTime.fromFormat(props.rangeEnd, "yyyy-MM-dd'T'TT").toSeconds();
+
+        dlApi.get(
+            `${appName}/all`,
+            {
+                params: {
+                    start: startTime,
+                    end: endTime
+                }
+            }
+        )
+            .then(resp => {
+                saveAs(
+                    new Blob(
+                        resp.data.split(/.{10000}/g).filter(s => s),
+                        {
+                            type: 'text/csv;charset=utf-8'
+                        }
+                    ),
+                    `${appName}.${startTime}-${endTime}.csv`
+                );
+                setTimeout(() => {
+                    setDownloadPending(false);
+                }, 250);
+            })
+            .catch(err => {
+                console.log(err);
+                setDownloadPending(false);
+                window.alert('Unable to download data :(');
+                console.error('download failed');
+            });
+    }
+
+    return (
+        <MDBBtn
+            outline
+            className='mx-2'
+            color='info'
+            disabled={downloadPending}
+            onClick={() => handleDownload(props.appName)}
+            style={{
+                flexDirection: 'row',
+                alignItems: 'center'
+            }}
+        >
+            {downloadPending ? (
+                <MDBSpinner
+                    color='primary'
+                    size='sm'
+                    role='status'
+                    tag='span'
+                    className='me-2'
+                />
+            ) : (
+                    <></>
+            )}
+            Download
+        </MDBBtn>
+    );
+}
+
+
 function AppsList(props) {
+
+    const [rangeStart, setRangeStart] = useState(
+        DateTime.local()
+            .minus({
+                hours: 6
+            })
+            .toFormat("yyyy-MM-dd'T'TT")
+    );
+    const [rangeEnd, setRangeEnd] = useState(
+        DateTime.local()
+            .toFormat("yyyy-MM-dd'T'TT")
+    );
+
+
     if (props.appsList.length === 0) {
         return (
             <div>
@@ -141,14 +231,70 @@ function AppsList(props) {
         );
     }
 
+
     return (
         <div>
+            <div>
+                <p>
+                    The download button in each row of the apps table,
+                    below, will start a download for that app's data
+                    across a particular time range. Set the bounds of
+                    that range here.
+                </p>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 10,
+                        marginLeft: 10
+                    }}
+                >
+                    <span
+                        style={{
+                            width: 125
+                        }}
+                    >
+                        Range Start
+                    </span>
+                    <TextField
+                        name="rangeStart"
+                        type="datetime-local"
+                        value={rangeStart}
+                        onChange={event => setRangeStart(event.target.value)}
+                    />
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 10,
+                        marginLeft: 10
+                    }}
+                >
+                    <span
+                        style={{
+                            width: 125
+                        }}
+                    >
+                        Range End
+                    </span>
+                    <TextField
+                        name="rangeEnd"
+                        type="datetime-local"
+                        value={rangeEnd}
+                        onChange={event => setRangeEnd(event.target.value)}
+                    />
+                </div>
+            </div>
             <MDBTable striped hover responsive>
                 <MDBTableHead>
                     <tr>
                         <th scope='col'>Name</th>
                         <th scope='col'>Schema</th>
                         <th scope='col'>Metrics</th>
+                        <th scope='col'>Download</th>
                         <th scope='col'>Delete</th>
                     </tr>
                 </MDBTableHead>
@@ -170,6 +316,13 @@ function AppsList(props) {
                                     <RevealingButton
                                         appName={appName}
                                         endpoint="metrics"
+                                    />
+                                </td>
+                                <td>
+                                    <DownloadButton
+                                        appName={appName}
+                                        rangeStart={rangeStart}
+                                        rangeEnd={rangeEnd}
                                     />
                                 </td>
                                 <td>
@@ -201,7 +354,6 @@ export default function Interface(props) {
     // There are other ways of doing this, but
     // this one is so easy!
     useEffect(() => {
-        console.log(props.idToken);
         api = axios.create({
             baseURL: 'https://api.uvasif.org/v2',
             timeout: 2000,
@@ -209,6 +361,14 @@ export default function Interface(props) {
                 Authorization: props.idToken
             }
         });
+
+        dlApi = axios.create({
+            baseURL: 'https://download.uvasif.org/v1',
+            timeout: 0,
+            headers: {
+                Authorization: props.idToken
+            }
+        })
     }, [props.idToken]);
 
     // Retrieve the list of apps for the current

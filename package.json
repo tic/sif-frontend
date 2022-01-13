@@ -4,9 +4,12 @@
   "description": "Small website that allows users to visually interact with the SIF platform's API.",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.12.3",
     "amazon-cognito-identity-js": "^5.2.4",
     "axios": "^0.24.0",
     "ejs": "^3.1.6",
+    "file-saver": "^2.0.5",
+    "luxon": "^2.3.0",
     "mdb-react-ui-kit": "^1.0.0-beta5",
     "react": "17.0.1",
     "react-dom": "17.0.1",
