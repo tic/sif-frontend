@@ -1,39 +1,270 @@
-import React from 'react';
-import { MDBBtn, MDBContainer } from 'mdb-react-ui-kit';
+import React, { useState } from 'react';
+import {
+    MDBBtn,
+    MDBContainer,
+    MDBInput,
+    MDBSpinner
+} from 'mdb-react-ui-kit';
+import { AuthenticationDetails, CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
+import Interface from './Interface';
 
 function App() {
 
-    // Auth token available in:
-    //   document.getElementById("token").textContent
+    const [idToken, setIdToken] = useState(null);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [refreshTimeout, setRefreshTimeout] = useState(null);
+
+    function login() {
+
+        setIdToken("pending");
+
+        // Create the object to user the user's credentials
+        const authDetails = new AuthenticationDetails({
+            Username: username,
+            Password: password
+        });
+
+        // Establish a reference to the SIF user pool
+        const pool = new CognitoUserPool({
+            UserPoolId: 'us-east-1_yfAGwxbYW',
+            ClientId: '4bfuvavalple0k8k6lj4oln5ne'
+        });
+
+        // Create the cognito user reference object
+        const user = new CognitoUser({
+            Username: username,
+            Pool: pool
+        });
+
+        // Authenticate the user object
+        user.authenticateUser(
+            authDetails,
+            {
+                onSuccess: function (result) {
+                    // Parse out the id token
+                    const idToken = result
+                        .getIdToken()
+                        .getJwtToken();
+
+                    // Clear any previous error
+                    setError(null);
+
+                    // Store the token
+                    setIdToken(idToken);
+
+                    // The token should be refreshed every hour.
+                    const timeout = setTimeout(login.bind(this), 60 * 60 * 1000);
+                    setRefreshTimeout(timeout);
+                },
+                onFailure: function (error) {
+                    console.error(error);
+                    setError(error.toString());
+                    clearTimeout(refreshTimeout);
+                    setRefreshTimeout(null);
+                    setTimeout(() => {
+                        setIdToken(null);
+                    }, 250);
+                }
+            }
+        );
+    }
+
+
+    function logout() {
+
+        // Clear token refresh timeout
+        clearTimeout(refreshTimeout);
+        setRefreshTimeout(null);
+
+        // Clear any previous error
+        setError(null);
+
+        // Set token to null
+        setIdToken(null);
+    }
+
+
+    if (idToken === null) {
+        return (
+            <MDBContainer fluid>
+                <div
+                    className='d-flex justify-content-center align-items-center'
+                    style={{ height: '100vh' }}
+                >
+                    <div className='text-center'>
+                        <h5 className='mb-3'>
+                            Enter your API access credentials.
+                        </h5>
+                        <p className='mb-3'>Re-entering your credentials here allows you to change API access permissions without logging out of the website.</p>
+                        <div
+                            style={{
+                                margin: 25
+                            }}
+                        >
+                            <MDBInput
+                                label="Username"
+                                value={username}
+                                onChange={(event) => {
+                                    if (event.nativeEvent.data) {
+                                        // Append character to username
+                                        setUsername(username + event.nativeEvent.data);
+                                    } else {
+                                        // Subtract character from username
+                                        setUsername(username.slice(0, -1));
+                                    }
+                                }}
+                                style={{
+                                    marginBottom: 10
+                                }}
+                            />
+                            <MDBInput
+                                label="Password"
+                                value={password}
+                                onChange={(event) => {
+                                    if (event.nativeEvent.data) {
+                                        // Append character to password
+                                        setPassword(password + event.nativeEvent.data);
+                                    } else {
+                                        // Subtract character from password
+                                        setPassword(password.slice(0, -1));
+                                    }
+                                }}
+                                type="password"
+                            />
+                        </div>
+                        <MDBBtn
+                            tag='a'
+                            role='button'
+                            onClick={login}
+                        >
+                            Authorize
+                        </MDBBtn>
+
+                        {error ? (
+                            <div
+                                style={{
+                                    height: 30,
+                                    paddingTop: 10
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        color: "#ff2222"
+                                    }}
+                                >
+                                    {error}
+                                </span>
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    height: 30
+                                }}
+                            />
+                        )}
+                    </div>
+                </div>
+            </MDBContainer>
+        );
+    }
+
+
+    if (idToken === "pending") {
+        return (
+            <MDBContainer fluid>
+                <div
+                    className='d-flex justify-content-center align-items-center'
+                    style={{ height: '100vh' }}
+                >
+                    <div className='text-center'>
+                        <h5 className='mb-3'>
+                            Enter your API access credentials.
+                        </h5>
+                        <p className='mb-3'>Re-entering your credentials here allows you to change API access permissions without logging out of the website.</p>
+                        <div
+                            style={{
+                                margin: 25
+                            }}
+                        >
+                            <MDBInput
+                                label="Username"
+                                value={username}
+                                disabled
+                                style={{
+                                    marginBottom: 10
+                                }}
+                            />
+                            <MDBInput
+                                label="Password"
+                                value={password}
+                                type="password"
+                                disabled
+                            />
+                        </div>
+                        <MDBBtn
+                            tag='a'
+                            role='button'
+                            onClick
+                            disabled
+                        >
+                            <MDBSpinner
+                                size='sm'
+                                role='status'
+                                tag='span'
+                                className='me-2'
+                            />
+                            Authorizing
+                        </MDBBtn>
+
+                        <div
+                            style={{
+                                height: 30
+                            }}
+                        />
+                    </div>
+                </div>
+            </MDBContainer>
+        );
+    }
+
 
     return (
         <MDBContainer fluid>
             <div
-                className='d-flex justify-content-center align-items-center'
-                style={{ height: '100vh' }}
+                style={{
+                    margin: 15,
+                    display: 'flex',
+                    flexDirection: 'row'
+                }}
             >
-                <div className='text-center'>
-                    <img
-                        className='mb-4'
-                        src='https://mdbootstrap.com/img/logo/mdb-transparent-250px.png'
-                        style={{ width: 250, height: 90 }}
-                    />
-                    <h5 className='mb-3'>
-                        Thank you for using our product. We're glad you're with us.
-                    </h5>
-                    <p className='mb-3'>MDB Team</p>
-                    <MDBBtn
-                        tag='a'
-                        href='https://mdbootstrap.com/docs/standard/getting-started/'
-                        target='_blank'
-                        role='button'
-                    >
-                        Start MDB tutorial
-                    </MDBBtn>
-                </div>
+                <MDBBtn
+                    color='warning'
+                    onClick={logout}
+                >
+                    Switch User
+                </MDBBtn>
+                <h6
+                    style={{
+                        marginTop: 10,
+                        marginLeft: 10
+                    }}
+                >
+                    Current user: {username}
+                </h6>
             </div>
+            <div
+                style={{
+                    width: '100%',
+                    height: 2,
+                    background: '#000000'
+                }}
+            />
+            <Interface idToken={idToken}/>
         </MDBContainer>
     );
 }
+
 
 export default App;

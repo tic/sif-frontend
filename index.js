@@ -4,6 +4,7 @@ const ejs = require("ejs");
 const app = express();
 
 app.get("/health-check", (req, res) => {
+    console.log("Health check!");
     res.status(200).send({
         code: 200,
         message: "Successful health check!"
