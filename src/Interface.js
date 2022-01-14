@@ -17,13 +17,16 @@ const axios = require("axios").default;
 var api = null;
 var dlApi = null;
 
+
 function RevealingButton(props) {
 
     const { appName, endpoint } = props;
 
+
     const [revealed, setRevealed] = useState(false);
     const [revealPending, setRevealPending] = useState(false);
     const [content, setContent] = useState((<></>));
+
 
     // Runs when the reveal button is clicked
     function clickHandler() {
@@ -84,6 +87,7 @@ function RevealingButton(props) {
             });
     }
 
+
     // If the content has not been revealed
     // yet, then either the reveal button
     // or a spinner should be displayed.
@@ -124,6 +128,7 @@ function RevealingButton(props) {
             </div>
         );
     }
+
 
     // Content is ready to be revealed
     return (
@@ -177,6 +182,7 @@ function DownloadButton(props) {
             });
     }
 
+
     return (
         <MDBBtn
             outline
@@ -198,7 +204,7 @@ function DownloadButton(props) {
                     className='me-2'
                 />
             ) : (
-                    <></>
+                <></>
             )}
             Download
         </MDBBtn>
@@ -221,6 +227,17 @@ function AppsList(props) {
     );
 
 
+    const [zoneData, setZoneData] = useState({});
+    useEffect(() => {
+        let zd = DateTime.local();
+        let offset = zd.offset / 60;
+        setZoneData({
+            offsetName: zd.offsetNameShort,
+            zoneName: 'UTC' + (offset < 0 ? '' : '+') + offset.toString()
+        });
+    }, []);
+
+
     if (props.appsList.length === 0) {
         return (
             <div>
@@ -240,6 +257,9 @@ function AppsList(props) {
                     below, will start a download for that app's data
                     across a particular time range. Set the bounds of
                     that range here.
+                </p>
+                <p>
+                    All times are relative to your local time zone: {zoneData.offsetName} ({zoneData.zoneName})
                 </p>
                 <div
                     style={{
@@ -349,6 +369,7 @@ export default function Interface(props) {
     const [myApps, setMyApps] = useState(null);
     const [error, setError] = useState(null);
 
+
     // When the id token changes, create a new
     // Axios object that uses the new header.
     // There are other ways of doing this, but
@@ -371,6 +392,7 @@ export default function Interface(props) {
         })
     }, [props.idToken]);
 
+
     // Retrieve the list of apps for the current
     // user, after axios is ready.
     useEffect(() => {
@@ -389,6 +411,7 @@ export default function Interface(props) {
             });
     }, []);
 
+
     return (
         <MDBContainer fluid>
             <div
@@ -406,13 +429,17 @@ export default function Interface(props) {
                     >
                         My Apps
                     </h3>
-                    {myApps === null ? (
+                    {myApps === null ? error === null ? (
                         <MDBSpinner
                             size='md'
                             role='status'
                             tag='span'
                             className='me-2'
                         />
+                    ) : (
+                        <p>
+                            {error}
+                        </p>
                     ) : (
                         <AppsList appsList={myApps} />
                     )}
@@ -421,18 +448,3 @@ export default function Interface(props) {
         </MDBContainer>
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

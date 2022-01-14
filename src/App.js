@@ -107,13 +107,7 @@ function App() {
                                 label="Username"
                                 value={username}
                                 onChange={(event) => {
-                                    if (event.nativeEvent.data) {
-                                        // Append character to username
-                                        setUsername(username + event.nativeEvent.data);
-                                    } else {
-                                        // Subtract character from username
-                                        setUsername(username.slice(0, -1));
-                                    }
+                                    setUsername(event.target.value);
                                 }}
                                 style={{
                                     marginBottom: 10
@@ -123,13 +117,7 @@ function App() {
                                 label="Password"
                                 value={password}
                                 onChange={(event) => {
-                                    if (event.nativeEvent.data) {
-                                        // Append character to password
-                                        setPassword(password + event.nativeEvent.data);
-                                    } else {
-                                        // Subtract character from password
-                                        setPassword(password.slice(0, -1));
-                                    }
+                                    setPassword(event.target.value);
                                 }}
                                 type="password"
                             />
@@ -261,7 +249,7 @@ function App() {
                     background: '#000000'
                 }}
             />
-            <Interface idToken={idToken}/>
+            <Interface idToken={idToken} />
         </MDBContainer>
     );
 }
