@@ -13,7 +13,7 @@ import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
 
 
-const axios = require("axios").default;
+const axios = require('axios').default;
 var api = null;
 var dlApi = null;
 
@@ -142,9 +142,33 @@ function RevealingButton(props) {
 function DownloadButton(props) {
 
     const [downloadPending, setDownloadPending] = useState(false);
+    const [pointDisplay, setPointDisplay] = useState('?');
 
 
-    function handleDownload(appName) {
+    useEffect(() => {
+        setPointDisplay('?');
+        const startTime = DateTime.fromFormat(props.rangeStart, "yyyy-MM-dd'T'TT").toSeconds();
+        const endTime = DateTime.fromFormat(props.rangeEnd, "yyyy-MM-dd'T'TT").toSeconds();
+        api.get(`/apps/app/${props.appName}/count`,
+            {
+                params: {
+                    start: startTime,
+                    end: endTime
+                }
+            }
+        )
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    setPointDisplay(resp.data.count.toLocaleString());
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }, [props.rangeStart, props.rangeEnd]);
+
+
+    function handleDownload() {
 
         setDownloadPending(true);
 
@@ -152,7 +176,7 @@ function DownloadButton(props) {
         const endTime = DateTime.fromFormat(props.rangeEnd, "yyyy-MM-dd'T'TT").toSeconds();
 
         dlApi.get(
-            `${appName}/all`,
+            `${props.appName}/all`,
             {
                 params: {
                     start: startTime,
@@ -168,7 +192,7 @@ function DownloadButton(props) {
                             type: 'text/csv;charset=utf-8'
                         }
                     ),
-                    `${appName}.${startTime}-${endTime}.csv`
+                    `${props.appName}.${startTime}-${endTime}.csv`
                 );
                 setTimeout(() => {
                     setDownloadPending(false);
@@ -189,7 +213,7 @@ function DownloadButton(props) {
             className='mx-2'
             color='info'
             disabled={downloadPending}
-            onClick={() => handleDownload(props.appName)}
+            onClick={handleDownload}
             style={{
                 flexDirection: 'row',
                 alignItems: 'center'
@@ -206,7 +230,7 @@ function DownloadButton(props) {
             ) : (
                 <></>
             )}
-            Download
+            Download ({pointDisplay})
         </MDBBtn>
     );
 }
