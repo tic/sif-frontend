@@ -8,9 +8,10 @@ import {
     MDBTableHead,
     MDBTableBody
 } from 'mdb-react-ui-kit';
-import { TextField } from '@material-ui/core';
+import { TextField, IconButton } from '@material-ui/core';
 import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
 
 const axios = require('axios').default;
@@ -390,6 +391,7 @@ function AppsList(props) {
 
 export default function Interface(props) {
 
+    const [appKey, setAppKey] = useState(0);
     const [myApps, setMyApps] = useState(null);
     const [error, setError] = useState(null);
 
@@ -445,14 +447,41 @@ export default function Interface(props) {
                 }}
             >
                 <div>
-                    <h3
-                        className='mb-3'
+                    <div
                         style={{
-                            margin: 25
+                            display: 'flex',
+                            alignItems: 'center'
                         }}
                     >
-                        My Apps
-                    </h3>
+                        <h3
+                            className='mb-3'
+                            style={{
+                                margin: 25
+                            }}
+                        >
+                            My Apps
+                        </h3>
+                        <IconButton
+                            onClick={() => {
+                                setMyApps(null);
+                                api.get("/apps/list")
+                                    .then(({ data }) => {
+                                        if (data.code !== 200) {
+                                            throw "Server reported incorrect status code";
+                                        } else {
+                                            setAppKey(appKey + 1);
+                                            setMyApps(data.apps);
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        setError("Unable to load app list :(");
+                                    });
+                            }}
+                        >
+                            <RefreshIcon />
+                        </IconButton>
+                    </div>
                     {myApps === null ? error === null ? (
                         <MDBSpinner
                             size='md'
