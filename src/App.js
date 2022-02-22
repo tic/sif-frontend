@@ -7,6 +7,7 @@ import {
 } from 'mdb-react-ui-kit';
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
 import Interface from './Interface';
+import ErrorViewer from './ErrorViewer';
 
 function App() {
 
@@ -308,7 +309,7 @@ function App() {
                 ) : pane === "sourceRegistration" ? (
                     <div>Coming soon: custom source registration</div>
                 ): (
-                    <div>Coming soon: error log!</div>
+                    <ErrorViewer idToken={idToken} />
                 )
             }
         </MDBContainer>
