@@ -16,6 +16,8 @@ function App() {
     const [error, setError] = useState("");
     const [refreshTimeout, setRefreshTimeout] = useState(null);
 
+    const [pane, setPane] = useState("appViewer");
+
     function login() {
 
         setIdToken("pending");
@@ -244,12 +246,71 @@ function App() {
             </div>
             <div
                 style={{
-                    width: '100%',
-                    height: 2,
-                    background: '#000000'
+                    display: 'flex',
+                    justifyContent: 'center',
+                    borderTop: '2px solid black',
+                    borderBottom: '2px solid black',
+                    marginLeft: -13,
+                    marginRight: -12
                 }}
-            />
-            <Interface idToken={idToken} />
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '33.3%',
+                        background: pane === 'appViewer' ? '#1266f1' : '',
+                        color: pane === 'appViewer' ? '#ffffff' : '',
+                        userSelect: 'none',
+                        cursor: 'pointer'
+                    }}
+                    onClick={() => setPane('appViewer')}
+                >
+                    <h3>App Viewer</h3>
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '33.3%',
+                        background: pane === 'sourceRegistration' ? '#1266f1' : '',
+                        color: pane === 'sourceRegistration' ? '#ffffff' : '',
+                        userSelect: 'none',
+                        cursor: 'pointer',
+                        borderLeft: '1px solid black',
+                        borderRight: '1px solid black'
+                    }}
+                    onClick={() => setPane('sourceRegistration')}
+                >
+                    <h3>Source Registration</h3>
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '33.3%',
+                        background: pane === 'errorLog' ? '#1266f1' : '',
+                        color: pane === 'errorLog' ? '#ffffff' : '',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                    }}
+                    onClick={() => setPane('errorLog')}
+                >
+                    <h3>Error Log</h3>
+                </div>
+            </div>
+            {
+                pane === "appViewer" ? (
+                    <Interface idToken={idToken} />
+                ) : pane === "sourceRegistration" ? (
+                    <div>Coming soon: custom source registration</div>
+                ): (
+                    <div>Coming soon: error log!</div>
+                )
+            }
         </MDBContainer>
     );
 }
