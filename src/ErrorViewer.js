@@ -22,11 +22,13 @@ function ErrorList(props) {
                 width: '100%'
             }}
         >
+            If a device name is available for a given error, it will be shown in (parentheses) next to the app.
             <MDBTable striped hover responsive>
                 <MDBTableHead>
                     <tr>
                         <th scope='col'>ID</th>
                         <th scope='col'>UTC Timestamp</th>
+                        <th scope='col'>App (device)</th>
                         <th scope='col'>Error</th>
                     </tr>
                 </MDBTableHead>
@@ -36,6 +38,7 @@ function ErrorList(props) {
                             <tr key={error.errorId}>
                                 <td>{error.errorId}</td>
                                 <td>{error.timestamp}</td>
+                                <td>{error.appName} {error.device ? `(${error.device})` : ''}</td>
                                 <td>{error.error}</td>
                             </tr>
                         ))
@@ -109,7 +112,7 @@ export default function ErrorViewer(props) {
                             margin: 25
                         }}
                     >
-                        Recent Errors (last 24h)
+                        Recent Errors (last 3h)
                     </h3>
                     <IconButton
                         onClick={() => {
