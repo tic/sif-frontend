@@ -8,6 +8,7 @@ import {
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
 import Interface from './Interface';
 import ErrorViewer from './ErrorViewer';
+import SourceRegistration from './SourceRegistration';
 
 function App() {
 
@@ -307,7 +308,7 @@ function App() {
                 pane === "appViewer" ? (
                     <Interface idToken={idToken} />
                 ) : pane === "sourceRegistration" ? (
-                    <div>Coming soon: custom source registration</div>
+                    <SourceRegistration idToken={idToken} />
                 ): (
                     <ErrorViewer idToken={idToken} />
                 )
