@@ -94,7 +94,64 @@ export default function SourceRegistration(props) {
                         {error}
                     </p>
                 ) : (
-                    <div>the thing</div>
+                    <MDBTable striped hover responsive>
+                        <MDBTableHead>
+                            <tr>
+                                <th scope='col'>ID</th>
+                                <th scope='col'>Type</th>
+                                <th scope='col'>Metadata</th>
+                            </tr>
+                        </MDBTableHead>
+                        <MDBTableBody>
+                            {
+                                sourceList.map(source => {
+                                    switch(source.type) {
+                                        case "ttn-mqtt":
+                                            return (
+                                                <tr key={source.sourceId}>
+                                                    <td>{source.sourceId}</td>
+                                                    <td>TTN MQTT</td>
+                                                    <td>
+                                                        <MDBTable>
+                                                            <MDBTableBody>
+                                                                <tr>
+                                                                    <td>Broker URL</td>
+                                                                    <td>{source.metadata.brokerURL}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Broker Port</td>
+                                                                    <td>{source.metadata.port}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Username</td>
+                                                                    <td>{source.metadata.username}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Password</td>
+                                                                    <td>{source.metadata.password}</td>
+                                                                </tr>
+                                                            </MDBTableBody>
+                                                        </MDBTable>
+                                                        {
+                                                            
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            );
+                                        
+                                        default:
+                                            return (
+                                                <tr key={source.sourceId}>
+                                                    <td>{source.sourceId}</td>
+                                                    <td>Unsupported Source Type</td>
+                                                    <td>Unknown</td>
+                                                </tr>
+                                            )
+                                    }
+                                })
+                            }
+                        </MDBTableBody>
+                    </MDBTable>
                 )}
             </div>
         </MDBContainer>
