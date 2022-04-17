@@ -15,7 +15,39 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 const axios = require('axios').default;
 var api = null;
 
+// ==================================================================
+// Adapted from https://stackoverflow.com/questions/6108819/javascript-timestamp-to-relative-time
+const units = {
+    year  : 24 * 60 * 60 * 1000 * 365,
+    month : 24 * 60 * 60 * 1000 * 365/12,
+    day   : 24 * 60 * 60 * 1000,
+    hour  : 60 * 60 * 1000,
+    minute: 60 * 1000
+};
+
+const rtf = new Intl.RelativeTimeFormat(
+    "en",
+    {
+        numeric: "auto"
+    }
+);
+
+const getRelativeTime = (d1, d2 = new Date()) => {
+    const elapsed = d1 - d2;
+
+    // "Math.abs" accounts for both "past" & "future" scenarios
+    for(const u in units) {
+        if(Math.abs(elapsed) > units[u]) {
+            return rtf.format(Math.round(elapsed/units[u]), u);
+        }
+    }
+
+    return rtf.format(Math.round(elapsed/1000), "second");
+}
+// ==================================================================
+
 function ErrorList(props) {
+
     return (
         <div
             style={{
@@ -27,7 +59,7 @@ function ErrorList(props) {
                 <MDBTableHead>
                     <tr>
                         <th scope='col'>ID</th>
-                        <th scope='col'>UTC Timestamp</th>
+                        <th scope='col'>Timestamp (Local)</th>
                         <th scope='col'>App (device)</th>
                         <th scope='col'>Error</th>
                     </tr>
@@ -37,8 +69,12 @@ function ErrorList(props) {
                         props.errorList.map(error => (
                             <tr key={error.errorId}>
                                 <td>{error.errorId}</td>
-                                <td>{error.timestamp}</td>
-                                <td>{error.appName} {error.device ? `(${error.device})` : ''}</td>
+                                <td>
+                                    <b>{new Date(error.timestamp).toLocaleString()}</b>
+                                    <br/>
+                                    {getRelativeTime(new Date(error.timestamp))}
+                                </td>
+                                <td>{error.appName} <b>{error.device ? `(${error.device})` : ''}</b></td>
                                 <td>{error.error}</td>
                             </tr>
                         ))
@@ -112,7 +148,7 @@ export default function ErrorViewer(props) {
                             margin: 25
                         }}
                     >
-                        Recent Errors (last 3h)
+                        Recent Errors
                     </h3>
                     <IconButton
                         onClick={() => {
