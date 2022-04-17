@@ -150,14 +150,16 @@ function DownloadButton(props) {
         setPointDisplay('?');
         const startTime = DateTime.fromFormat(props.rangeStart, "yyyy-MM-dd'T'TT").toSeconds();
         const endTime = DateTime.fromFormat(props.rangeEnd, "yyyy-MM-dd'T'TT").toSeconds();
-        api.get(`/apps/app/${props.appName}/count`,
-            {
-                params: {
-                    start: startTime,
-                    end: endTime
+        const delay = new Promise((resolve,) => setTimeout(resolve, Math.random() * 2250));
+        delay.then(() => {
+            api.get(`/apps/app/${props.appName}/count`,
+                {
+                    params: {
+                        start: startTime,
+                        end: endTime
+                    }
                 }
-            }
-        )
+            )
             .then(resp => {
                 if (resp.data.code === 200) {
                     setPointDisplay(resp.data.count.toLocaleString());
@@ -166,6 +168,7 @@ function DownloadButton(props) {
             .catch(err => {
                 console.log(err);
             });
+        })
     }, [props.rangeStart, props.rangeEnd]);
 
 
@@ -403,7 +406,7 @@ export default function Interface(props) {
     useEffect(() => {
         api = axios.create({
             baseURL: 'https://api.uvasif.org/v2',
-            timeout: 2000,
+            timeout: 0,
             headers: {
                 Authorization: props.idToken
             }
